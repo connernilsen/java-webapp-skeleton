@@ -80,9 +80,19 @@
       <version>4.6.1</version>
       <scope>test</scope>
     </dependency>
+
+    <!-- cli parser -->
+    <dependency>
+      <groupId>info.picocli</groupId>
+      <artifactId>picocli</artifactId>
+      <version>4.6.3</version>
+      <scope>test</scope> <!-- remove this if needed in main as well -->
+    </dependency>
   </dependencies>
 
   <build>
+    <defaultGoal>clean package</defaultGoal>
+
     <plugins>
       <!-- Spring plugin for Maven -->
       <plugin>
@@ -177,23 +187,30 @@
         </executions>
       </plugin>
 
-      <!-- compile generated code and all dependencies into a fat jar -->
+      <!-- compile generated code and all dependencies into an uber jar -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-assembly-plugin</artifactId>
-        <version>3.2.0</version>
-        <configuration>
-          <descriptorRefs>
-            <descriptorRef>jar-with-dependencies</descriptorRef>
-          </descriptorRefs>
-        </configuration>
+        <artifactId>maven-shade-plugin</artifactId>
+        <version>3.3.0</version>
         <executions>
           <execution>
-            <id>make-fat-jar</id>
             <phase>package</phase>
             <goals>
-              <goal>single</goal>
+              <goal>shade</goal>
             </goals>
+            <configuration>
+              <createDependencyReducedPom>false</createDependencyReducedPom>
+              <filters>
+                <filter>
+                  <artifact>*:*</artifact>
+                  <excludes>
+                    <exclude>meta-inf/*.sf</exclude>
+                    <exclude>meta-inf/*.dsa</exclude>
+                    <exclude>meta-inf/*.rsa</exclude>
+                  </excludes>
+                </filter>
+              </filters>
+            </configuration>
           </execution>
         </executions>
       </plugin>
@@ -202,6 +219,7 @@
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>properties-maven-plugin</artifactId>
+        <version>1.1.0</version>
         <executions>
           <execution>
             <phase>initialize</phase>
